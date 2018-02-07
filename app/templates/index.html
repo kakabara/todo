@@ -6,7 +6,8 @@
     <title>TODO-Сука</title>
 </head>
 <body>
-    <div>
+<script src="{{url_for('static', filename='script/main.js')}}"></script>
+    <div id="wrapper">
         <div id="queue">
             <div class="task critical inwork" id="1">
                 Задача3
@@ -14,7 +15,7 @@
             <div class="task usual inwork" id="2">
                 Задача2
             </div>
-            <div class="task important inwork" id="3">
+            <div class="task important done" id="3">
                 Задача1
             </div>
         </div>

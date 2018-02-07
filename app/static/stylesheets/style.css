@@ -5,12 +5,13 @@ body {
 }
 
 #queue {
-
+    width: 20%;
 }
-
 
 .task {
     font-size: 2em;
+    padding: 0.1em;
+
 }
 
 .important {
@@ -27,4 +28,9 @@ body {
 
 .inwork {
     color: #FFF;
+}
+
+.done {
+    background-color: #656D78;
+    color: #E6E9ED;
 }

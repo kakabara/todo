@@ -1,6 +1,7 @@
 from app import db
 import enum
 from datetime import datetime
+import json
 
 
 class PriorityType(enum.Enum):
@@ -22,3 +23,6 @@ class Task(db.Model):
     status = db.Column(db.Enum(TaskType))
     created_at = db.Column(db.DateTime, default=datetime.now())
     end_at = db.Column(db.DateTime)
+
+    def toJSON(self):
+        return json.dumps(self.__dict__)
