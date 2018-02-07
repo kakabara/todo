@@ -8,6 +8,11 @@ body {
 
 }
 
+
+.task {
+    font-size: 2em;
+}
+
 .important {
     background-color: #F6BB42;
 }
@@ -18,4 +23,8 @@ body {
 
 .critical {
     background-color: #DA4453;
+}
+
+.inwork {
+    color: #FFF;
 }
