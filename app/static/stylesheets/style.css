@@ -7,3 +7,15 @@ body {
 #queue {
 
 }
+
+.important {
+    background-color: #F6BB42;
+}
+
+.usual{
+    background-color: #8CC152;
+}
+
+.critical {
+    background-color: #DA4453;
+}
