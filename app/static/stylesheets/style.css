@@ -4,14 +4,14 @@ body {
 
 }
 
-#queue {
+#queue-tasks {
     width: 20%;
 }
 
 .task {
     font-size: 2em;
     padding: 0.1em;
-
+    text-align: center;
 }
 
 .important {
@@ -31,6 +31,6 @@ body {
 }
 
 .done {
-    background-color: #656D78;
-    color: #E6E9ED;
+    background-color: #E6E9EE;
+    color: #434A54;
 }

@@ -1,12 +1,16 @@
-const sendRequest = (method, url) => {
-    return fetch(url, {method})
-    .then( (response) => { response.json().then( (data) => { return data});})
-    .then( ans => {return ans;} )
-    .catch( (error) =>
-        {console.warn(error);} );
+let app = {}
+
+function pr(data){
+    app.data = data;
+    console.log(app);
 }
 
-var req = sendRequest('GET', 'http://127.0.0.1:5000/tasks');
-console.log(req);
+function sendRequest(url, method, callback) {
+    fetch(url, {method})
+    .then( (response) => {return response.json();})
+    .then( (data) => {callback(data);} )
+    .catch( (err) => {console.warn(err);} )
+}
 
+sendRequest('http://127.0.0.1:5000/tasks', 'GET', pr);
 
