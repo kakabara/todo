@@ -6,11 +6,18 @@ body {
 
 #queue-tasks {
     width: 20%;
+    overflow: hidden;
+    border: 10px #4FC1E9;
 }
 
-.task {
+.task{
+    width:120%;
+}
+
+.task-label {
+    height:100%;
+    width: 70%;
     font-size: 2em;
-    padding: 0.1em;
     text-align: center;
 }
 
@@ -33,4 +40,15 @@ body {
 .done {
     background-color: #E6E9EE;
     color: #434A54;
+}
+
+.inline{
+
+}
+
+.menu-icon {
+    position: relative;
+    left: -6em;
+    vertical-align: middle;
+    width: 2em;
 }

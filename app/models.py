@@ -24,5 +24,3 @@ class Task(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now())
     end_at = db.Column(db.DateTime)
 
-    def toJSON(self):
-        return json.dumps(self.__dict__)
