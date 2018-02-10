@@ -11,15 +11,10 @@ body {
 }
 
 .task{
-    width:120%;
+
 }
 
-.task-label {
-    height:100%;
-    width: 70%;
-    font-size: 2em;
-    text-align: center;
-}
+
 
 .important {
     background-color: #F6BB42;
@@ -47,8 +42,21 @@ body {
 }
 
 .menu-icon {
-    position: relative;
-    left: -6em;
     vertical-align: middle;
-    width: 2em;
+    width: 1.8em;
+}
+
+.task-label {
+    height:100%;
+    width: 100%;
+    font-size: 2em;
+    text-align: center;
+    display: inline-block;
+    z-index: 1;
+
+}
+
+.slide-menu{
+    position: absolute;
+    display: none;
 }

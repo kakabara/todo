@@ -27,14 +27,16 @@ class View {
         this.todoList = document.getElementById('queue-tasks');
     }
     // Блок кода отвечающий за создание и отображение данных
-   createIcons() {
+   createMenu() {
         let iconsMenu = [];
         const butMenu= {'but-delete':'close_red', 'but-edit': 'edit_orange', 'but-done':'done_green'};
         Object.keys(butMenu).forEach( (key)=> {
             let img = createElement('img', {className: 'menu-icon', src: "static/images/" + butMenu[key] + ".png"});
             iconsMenu.push(img);
             });
-        return iconsMenu;
+
+        let menu = createElement('div', {className: 'slide-menu'}, ...iconsMenu);
+        return menu;
     }
 
    getTaskLabel(task){
@@ -44,9 +46,9 @@ class View {
    }
 
    getTaskHTML(task) {
-       let icons = this.createIcons();
+       let menu = this.createMenu();
        let divTaskLabel = this.getTaskLabel(task);
-       return createElement('div', {id: task.id, className: 'task'},...icons, divTaskLabel);
+       return createElement('div', {id: task.id, className: 'task'},menu, divTaskLabel);
    }
 
    render_all_tasks(tasks) {
@@ -61,25 +63,42 @@ class View {
 
    // Разлчиные события
 
+
     clickOnLabel(event) {
-        let task = event.currentTarget;
+    event.stopPropagation();
+        let taskDiv = event.currentTarget;
         // slideMenu.style.transform = "translateX(-3em)";
-        task.getElementsByClassName('task-label')[0].style.transform = "translateX(3em)";
-        event.stopPropagation();
+
+        let menu = taskDiv.getElementsByClassName('slide-menu')[0];
+        if (!menu.style.display) {
+            let task = tasks[taskDiv.id];
+            taskDiv.getElementsByClassName('task-label')[0].style.transform = "translateX(90px)";
+            menu.style.display = 'block';
+            let descr = document.getElementById('description');
+            let subject = createElement('div', {className: 'subject'}, task.subject);
+            let time = createElement('div', {className: 'time'}, task.created_at);
+            let description = createElement('div', {className: 'description'}, task.description);
+
+            Object.values([subject, time, description]).forEach( (element) => {descr.appendChild(element)});
+        } else {
+            taskDiv.getElementsByClassName('task-label')[0].style.transform = "translateX(0)";
+            menu.style.display = '';
+        }
+
     }
 
 }
 
 
-let tasks = [];
+let tasks = {};
 let app = {}
 let view = new View();
 function pr(data){
     app.data = data;
     for (let i = 0; i < app.data.count; i++)
-        tasks.push(new Task(app.data.data[i]));
+        tasks[app.data.data[i].id] = new Task(app.data.data[i]);
 
-    view.render_all_tasks(tasks);
+    view.render_all_tasks(Object.values(tasks));
 
 }
 

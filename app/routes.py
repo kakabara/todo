@@ -1,5 +1,5 @@
 from app import app
-from flask import render_template
+from flask import render_template, request
 from app import db
 from .models import Task
 import json
@@ -29,3 +29,11 @@ def get_task():
         return json.dumps(result)
     finally:
         session.close()
+
+
+@app.route('/action', methods=['POST'])
+def request_action():
+    data = request.form
+    print(data['qwe'])
+    return 'ok'
+    pass
