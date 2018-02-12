@@ -67,21 +67,25 @@ class View {
     clickOnLabel(event) {
     event.stopPropagation();
         let taskDiv = event.currentTarget;
-        // slideMenu.style.transform = "translateX(-3em)";
 
         let menu = taskDiv.getElementsByClassName('slide-menu')[0];
+
         if (!menu.style.display) {
+
             let task = tasks[taskDiv.id];
             taskDiv.getElementsByClassName('task-label')[0].style.transform = "translateX(90px)";
             menu.style.display = 'block';
-            let descr = document.getElementById('description');
+
             let subject = createElement('div', {className: 'subject'}, task.subject);
             let time = createElement('div', {className: 'time'}, task.created_at);
             let description = createElement('div', {className: 'description'}, task.description);
+            let taskInfo = createElement('div', {className: 'task-info'}, subject, time, description);
 
-            Object.values([subject, time, description]).forEach( (element) => {descr.appendChild(element)});
+            taskDiv.appendChild(taskInfo);
+
         } else {
             taskDiv.getElementsByClassName('task-label')[0].style.transform = "translateX(0)";
+            taskDiv.removeChild(taskDiv.lastChild);
             menu.style.display = '';
         }
 

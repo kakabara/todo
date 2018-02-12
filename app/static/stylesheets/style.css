@@ -4,10 +4,20 @@ body {
 
 }
 
+#wrapper {
+    width:100%;
+}
+
 #queue-tasks {
     width: 20%;
     overflow: hidden;
     border: 10px #4FC1E9;
+    display: inline-block;
+}
+
+#description {
+    display: inline-block;
+    width: 79%;
 }
 
 .task{
@@ -59,4 +69,11 @@ body {
 .slide-menu{
     position: absolute;
     display: none;
+}
+
+
+.task-info {
+    width: 100%;
+    font-size: 1em;
+    text-align: center;
 }
