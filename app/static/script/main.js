@@ -1,18 +1,18 @@
-function createElement(tag, props, ...children) {
-    const newElement = document.createElement(tag);
+const sendRequest = (url, method, body) => {
+    return fetch(url, {method,
+        body: body ? JSON.stringify(body) : null
+     })
+    .then( (response) => response.json())
+    .catch( (err) => {console.warn(err);} )
+};
 
-    Object.keys(props).forEach((key) => {
-            newElement[key] = props[key];
-    })
+const getTasks = (path) => sendRequest(path, 'GET', null);
+const delTask = (path, body) => sendRequest(path, 'POST', body);
+const editTask = (path, body) => sendRequest(path, 'POST', body);
+const doneTask = (path, body) => sendRequest(path, 'POST')
 
-    children.forEach((child) =>{
-        if (typeof child == 'string'){
-            child = document.createTextNode(child);
-        }
-        newElement.appendChild(child);
-    })
-    return newElement;
-}
+
+
 
 class Task{
     constructor(task){
@@ -22,51 +22,31 @@ class Task{
     }
 }
 
-class View {
-    constructor(){
-        this.todoList = document.getElementById('queue-tasks');
-    }
-    // Блок кода отвечающий за создание и отображение данных
-   createMenu() {
-        let iconsMenu = [];
-        const butMenu= {'but-delete':'close_red', 'but-edit': 'edit_orange', 'but-done':'done_green'};
-        Object.keys(butMenu).forEach( (key)=> {
-            let img = createElement('img', {className: 'menu-icon', src: "static/images/" + butMenu[key] + ".png"});
-            iconsMenu.push(img);
-            });
 
-        let menu = createElement('div', {className: 'slide-menu'}, ...iconsMenu);
-        return menu;
+class Handlers {
+    static clickOnActionButton(event) {
+        let taskDiv = event.path.find( (elem) => elem.className === 'task' );
+        let button = event.path.find( (elem) => elem.className === 'menu-icon' );
+        let action = button.dataset.action;
+
+
+        event.stopPropagation();
     }
 
-   getTaskLabel(task){
-       let status = task.status.split('.')[1].toLowerCase();
-       let priority = task.priority.split('.')[1].toLowerCase();
-       return createElement('div', {className: ['inline','task-label', priority, status].join(' ')}, task.subject);
-   }
+    static clickOnQueueTasks(event){
+        let is_menu = event.path.find( (elem) => elem.className === 'slide-menu' );
+        if (is_menu) {
+            Handlers.clickOnActionButton(event);
+        } else if ( event.path.find( (elem) => elem.className === 'task-info' ) ) {
 
-   getTaskHTML(task) {
-       let menu = this.createMenu();
-       let divTaskLabel = this.getTaskLabel(task);
-       return createElement('div', {id: task.id, className: 'task'},menu, divTaskLabel);
-   }
+        } else {
+            Handlers.clickOnTask(event);
+        }
+    }
 
-   render_all_tasks(tasks) {
-   console.log(tasks);
-       tasks.forEach((task) => {
-       let tmp_task = {...task};
-           let taskElem = this.getTaskHTML(tmp_task);
-           taskElem.addEventListener('click', this.clickOnLabel);
-           this.todoList.appendChild(taskElem);
-       })
-   }
+    static clickOnTask(event) {
 
-   // Разлчиные события
-
-
-    clickOnLabel(event) {
-    event.stopPropagation();
-        let taskDiv = event.currentTarget;
+        let taskDiv = event.path.find( (elem) => elem.className === 'task');
 
         let menu = taskDiv.getElementsByClassName('slide-menu')[0];
 
@@ -88,8 +68,72 @@ class View {
             taskDiv.removeChild(taskDiv.lastChild);
             menu.style.display = '';
         }
+        event.stopPropagation();
 
     }
+}
+
+
+function createElement(tag, props, ...children) {
+    const newElement = document.createElement(tag);
+
+    Object.keys(props).forEach((key) => {
+            newElement[key] = props[key];
+    })
+
+    children.forEach((child) =>{
+        if (typeof child == 'string'){
+            child = document.createTextNode(child);
+        }
+        newElement.appendChild(child);
+    })
+    return newElement;
+}
+
+
+class View {
+    constructor(){
+        this.todoList = document.getElementById('queue-tasks');
+        this.todoList.addEventListener('click', Handlers.clickOnQueueTasks);
+    }
+    // Блок кода отвечающий за создание и отображение данных
+   createMenu() {
+        let iconsMenu = [];
+        const butMenu= {'delete':'close_red', 'edit': 'edit_orange', 'done':'done_green'};
+        Object.keys(butMenu).forEach( (key)=> {
+            let img = createElement('img', {className: 'menu-icon', src: "static/images/" + butMenu[key] + ".png"});
+            img.dataset.action = key;
+            iconsMenu.push(img);
+            });
+
+        let menu = createElement('div', {className: 'slide-menu'}, ...iconsMenu);
+        return menu;
+    }
+
+   getTaskLabel(task){
+       let status = task.status.split('.')[1].toLowerCase();
+       let priority = task.priority.split('.')[1].toLowerCase();
+       return createElement('div', {className: ['inline','task-label', priority, status].join(' ')}, task.subject);
+   }
+
+   getTaskHTML(task) {
+       let menu = this.createMenu();
+       let divTaskLabel = this.getTaskLabel(task);
+       return createElement('div', {id: task.id, className: 'task'},menu, divTaskLabel);
+   }
+
+   render_all_tasks(tasks) {
+
+       console.log(tasks);
+       tasks.forEach((task) => {
+       let tmp_task = {...task};
+           let taskElem = this.getTaskHTML(tmp_task);
+
+           this.todoList.appendChild(taskElem);
+       })
+   }
+
+   // Разлчиные события
 
 }
 
@@ -97,21 +141,15 @@ class View {
 let tasks = {};
 let app = {}
 let view = new View();
-function pr(data){
+
+
+function startApp(data){
     app.data = data;
     for (let i = 0; i < app.data.count; i++)
         tasks[app.data.data[i].id] = new Task(app.data.data[i]);
 
     view.render_all_tasks(Object.values(tasks));
-
 }
 
-function sendRequest(url, method, callback) {
-    fetch(url, {method})
-    .then( (response) => {return response.json();})
-    .then( (data) => {callback(data);} )
-    .catch( (err) => {console.warn(err);} )
-}
-
-sendRequest('http://127.0.0.1:5000/tasks', 'GET', pr);
+getTasks('http://127.0.0.1:5000/tasks').then( (data) => {startApp(data);} );
 

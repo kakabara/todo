@@ -33,7 +33,6 @@ def get_task():
 
 @app.route('/action', methods=['POST'])
 def request_action():
-    data = request.form
-    print(data['qwe'])
+    data = request.get_json()
+    print(data)
     return 'ok'
-    pass
