@@ -6,10 +6,12 @@ const sendRequest = (url, method, body) => {
     .catch( (err) => {console.warn(err);} )
 };
 
-const getTasks = (path) => sendRequest(path, 'GET', null);
-const delTask = (path, body) => sendRequest(path, 'POST', body);
-const editTask = (path, body) => sendRequest(path, 'POST', body);
-const doneTask = (path, body) => sendRequest(path, 'POST')
+class ApiServer{
+    static getTasks(path) { return sendRequest(path, 'GET', null); }
+    static delTask(path, body)  { return sendRequest(path, 'POST', body);}
+    static editTask(path, body)  { return sendRequest(path, 'POST', body);}
+    static doneTask(path, body)  { return sendRequest(path, 'POST', body);}
+}
 
 
 
@@ -151,5 +153,5 @@ function startApp(data){
     view.render_all_tasks(Object.values(tasks));
 }
 
-getTasks('http://127.0.0.1:5000/tasks').then( (data) => {startApp(data);} );
+ApiServer.getTasks('http://127.0.0.1:5000/tasks').then( (data) => {startApp(data);} );
 
