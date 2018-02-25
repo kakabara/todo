@@ -1,8 +1,7 @@
 from app import app
-from flask import render_template, request
+from flask import render_template, request, jsonify
 from app import db
 from .models import Task
-import json
 
 
 def row2dict(row):
@@ -26,13 +25,15 @@ def get_task():
         tasks = session.query(Task).all()
         tasks_dicts = [row2dict(task) for task in tasks]
         result = {"count": len(tasks), "data": tasks_dicts}
-        return json.dumps(result)
+        return jsonify(result)
     finally:
         session.close()
 
 
 @app.route('/action', methods=['POST'])
 def request_action():
-    data = request.get_json()
+
+    data = request.data.decode("utf-8")
     print(data)
-    return 'ok'
+    result = {'request': 'done'}
+    return jsonify(result)

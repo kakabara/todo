@@ -8,9 +8,10 @@ const sendRequest = (url, method, body) => {
 
 class ApiServer{
     static getTasks(path) { return sendRequest(path, 'GET', null); }
-    static delTask(path, body)  { return sendRequest(path, 'POST', body);}
-    static editTask(path, body)  { return sendRequest(path, 'POST', body);}
-    static doneTask(path, body)  { return sendRequest(path, 'POST', body);}
+    static deleteTask(body)  { return sendRequest('http://127.0.0.1:5000/action', 'POST', body);}
+    static editTask(body)  { return sendRequest('http://127.0.0.1:5000/action', 'POST', body);}
+    static doneTask(body)  { return sendRequest('http://127.0.0.1:5000/action', 'POST', body);}
+    static createTask(body) { return sendRequest('http://127.0.0.1:5000/action', 'POST', body);}
 }
 
 
@@ -26,29 +27,74 @@ class Task{
 
 
 class Handlers {
-    static clickOnActionButton(event) {
-        let taskDiv = event.path.find( (elem) => elem.className === 'task' );
-        let button = event.path.find( (elem) => elem.className === 'menu-icon' );
-        let action = button.dataset.action;
+    static clickOnCancel(event) {
+        let modal = function(elem) {
+                while (elem.className!='modal-window') {
+                    elem=elem.parentElement;
+                }
+            return elem;
+            }(event.target);
+        view.hideModal(modal);
+    }
 
+    static clickOnSubmit(event) {
+
+        bufferTask.subject = document.getElementById('subject-input').value;
+        bufferTask.description = document.getElementById('description').value;
+        bufferTask.description = 'Priority.' + document.getElementById('priority').value;
+
+    }
+
+    static inputSearch(event){
+        let filteredTask = Object.values(tasks).filter( task =>
+            { if (task.subject.toLowerCase().indexOf(event.target.value.toLowerCase()) > -1 ) {
+                return true;
+            } else {
+                return false;
+            }
+
+            });
+        if (filteredTask) {
+            while (view.todoList.firstChild) view.todoList.removeChild(view.todoList.firstChild);
+            view.render_all_tasks(filteredTask);
+        }
+    }
+
+    static clickOnActionButton(event) {
+        let button = event.target;
+        let action = button.dataset.action;
+        let buttonToAction = action + "Task";
+        let task = tasks[button.dataset.task_id];
+        if (action === 'edit'){
+            let modalEdit = document.getElementById('task-modal');
+            view.showModal(modalEdit, task);
+        } else if (action === 'create') {
+            let modalCreate = document.getElementById("task-modal");
+            view.showModal(modalCreate);
+        } else if (action === 'delete') {
+
+        } else if (action === 'done') {
+
+        }
 
         event.stopPropagation();
     }
 
     static clickOnQueueTasks(event){
-        let is_menu = event.path.find( (elem) => elem.className === 'slide-menu' );
-        if (is_menu) {
-            Handlers.clickOnActionButton(event);
-        } else if ( event.path.find( (elem) => elem.className === 'task-info' ) ) {
+        let target = event.target;
 
-        } else {
+        if ([...target.classList].indexOf('task-label') >= 0) {
             Handlers.clickOnTask(event);
+            event.stopPropagation();
+        } else if ([...target.classList].indexOf('menu-icon') >= 0) {
+            Handlers.clickOnActionButton(event);
+            event.stopPropagation();
         }
     }
 
     static clickOnTask(event) {
 
-        let taskDiv = event.path.find( (elem) => elem.className === 'task');
+        let taskDiv = event.target.parentElement;
 
         let menu = taskDiv.getElementsByClassName('slide-menu')[0];
 
@@ -97,14 +143,42 @@ class View {
     constructor(){
         this.todoList = document.getElementById('queue-tasks');
         this.todoList.addEventListener('click', Handlers.clickOnQueueTasks);
+        this.btnCreateTask = document.getElementById('icon-create-task');
+        this.btnCreateTask.addEventListener('click', Handlers.clickOnActionButton);
+        this.inputSearch = document.getElementById('search-bar');
+        this.inputSearch.addEventListener('input', Handlers.inputSearch);
+        this.buttonsCancel = document.getElementsByClassName('cancel');
+        Object.values(this.buttonsCancel).forEach((elem) => {elem.addEventListener('click', Handlers.clickOnCancel)});
+
     }
+
+    showModal(modal, task=null){
+        if (task){
+            document.getElementById('subject-input').value = task.subject;
+            document.getElementById('description').value = task.description;
+            document.getElementById('priority').value = task.priority.replace("PriorityType.", "");
+            bufferTask = task;
+        } else {
+            bufferTask = {};
+        }
+        modal.style.display = 'block';
+    }
+
+    hideModal(modal){
+        modal.style.display = 'none';
+        document.getElementById('subject-input').value = '';
+        document.getElementById('description').value = '';
+        document.getElementById('priority').value = '';
+    }
+
     // Блок кода отвечающий за создание и отображение данных
-   createMenu() {
+   createMenu(task) {
         let iconsMenu = [];
         const butMenu= {'delete':'close_red', 'edit': 'edit_orange', 'done':'done_green'};
         Object.keys(butMenu).forEach( (key)=> {
             let img = createElement('img', {className: 'menu-icon', src: "static/images/" + butMenu[key] + ".png"});
             img.dataset.action = key;
+            img.dataset.task_id = task.id;
             iconsMenu.push(img);
             });
 
@@ -119,14 +193,12 @@ class View {
    }
 
    getTaskHTML(task) {
-       let menu = this.createMenu();
+       let menu = this.createMenu(task);
        let divTaskLabel = this.getTaskLabel(task);
        return createElement('div', {id: task.id, className: 'task'},menu, divTaskLabel);
    }
 
    render_all_tasks(tasks) {
-
-       console.log(tasks);
        tasks.forEach((task) => {
        let tmp_task = {...task};
            let taskElem = this.getTaskHTML(tmp_task);
@@ -139,19 +211,18 @@ class View {
 
 }
 
-
-let tasks = {};
-let app = {}
-let view = new View();
-
-
+var tasks = {};
+var app = {}
+var view = new View();
+var bufferTask = null;
 function startApp(data){
     app.data = data;
     for (let i = 0; i < app.data.count; i++)
         tasks[app.data.data[i].id] = new Task(app.data.data[i]);
 
     view.render_all_tasks(Object.values(tasks));
+    console.log(tasks);
 }
 
-ApiServer.getTasks('http://127.0.0.1:5000/tasks').then( (data) => {startApp(data);} );
+ApiServer.getTasks('http://127.0.0.1:5000/tasks').then( (data) => {console.log(data);startApp(data);} );
 
