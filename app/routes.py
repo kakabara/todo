@@ -1,5 +1,5 @@
 from app import app
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, json
 from app import db
 from .models import Task
 
@@ -30,10 +30,33 @@ def get_task():
         session.close()
 
 
-@app.route('/action', methods=['POST'])
-def request_action():
+@app.route('/create', methods=['POST'])
+def request_create():
+    data = json.loads(request.data.decode("utf-8"))
+    print(data)
+    result = {'request': 'done'}
+    return jsonify(result)
 
-    data = request.data.decode("utf-8")
+
+@app.route('/delete', methods=['POST'])
+def request_delete():
+    data = json.loads(request.data.decode("utf-8"))
+    print(data)
+    result = {'request': 'done'}
+    return jsonify(result)
+
+
+@app.route('/edit', methods=['POST'])
+def request_edit():
+    data = json.loads(request.data.decode("utf-8"))
+    print(data)
+    result = {'request': 'done'}
+    return jsonify(result)
+
+
+@app.route('/done', methods=['POST'])
+def request_done():
+    data = json.loads(request.data.decode("utf-8"))
     print(data)
     result = {'request': 'done'}
     return jsonify(result)

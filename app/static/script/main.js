@@ -8,10 +8,10 @@ const sendRequest = (url, method, body) => {
 
 class ApiServer{
     static getTasks(path) { return sendRequest(path, 'GET', null); }
-    static deleteTask(body)  { return sendRequest('http://127.0.0.1:5000/action', 'POST', body);}
-    static editTask(body)  { return sendRequest('http://127.0.0.1:5000/action', 'POST', body);}
-    static doneTask(body)  { return sendRequest('http://127.0.0.1:5000/action', 'POST', body);}
-    static createTask(body) { return sendRequest('http://127.0.0.1:5000/action', 'POST', body);}
+    static deleteTask(body)  { return sendRequest('http://127.0.0.1:5000/delete', 'POST', body);}
+    static editTask(body)  { return sendRequest('http://127.0.0.1:5000/edit', 'POST', body);}
+    static doneTask(body)  { return sendRequest('http://127.0.0.1:5000/done', 'POST', body);}
+    static createTask(body) { return sendRequest('http://127.0.0.1:5000/create', 'POST', body);}
 }
 
 
@@ -25,6 +25,12 @@ class Task{
     }
 }
 
+class ListTasks{
+    constructor(tasks){
+        this.tasks = [];
+        tasks.forEach((task) => this.tasks.push(new Task(task)));
+    }
+}
 
 class Handlers {
     static clickOnCancel(event) {
@@ -38,11 +44,22 @@ class Handlers {
     }
 
     static clickOnSubmit(event) {
+        if (!bufferTask) {
+               bufferTask = {};
+               bufferTask.subject = document.getElementById('subject-input').value;
+               bufferTask.description = document.getElementById('description').value;
+               bufferTask.description = 'Priority.' + document.getElementById('priority').value;
+               let body = JSON.stringify(bufferTask);
+               ApiServer.createTask(body);
 
-        bufferTask.subject = document.getElementById('subject-input').value;
-        bufferTask.description = document.getElementById('description').value;
-        bufferTask.description = 'Priority.' + document.getElementById('priority').value;
-
+        } else {
+               bufferTask.subject = document.getElementById('subject-input').value;
+               bufferTask.description = document.getElementById('description').value;
+               bufferTask.description = 'Priority.' + document.getElementById('priority').value;
+               let body = JSON.stringify(bufferTask);
+               ApiServer.editTask(body);
+        }
+        Handlers.clickOnCancel(event);
     }
 
     static inputSearch(event){
@@ -65,12 +82,15 @@ class Handlers {
         let action = button.dataset.action;
         let buttonToAction = action + "Task";
         let task = tasks[button.dataset.task_id];
+        bufferTask = task;
         if (action === 'edit'){
             let modalEdit = document.getElementById('task-modal');
             view.showModal(modalEdit, task);
+
         } else if (action === 'create') {
             let modalCreate = document.getElementById("task-modal");
             view.showModal(modalCreate);
+            bufferTask = null;
         } else if (action === 'delete') {
 
         } else if (action === 'done') {
@@ -101,7 +121,7 @@ class Handlers {
         if (!menu.style.display) {
 
             let task = tasks[taskDiv.id];
-            taskDiv.getElementsByClassName('task-label')[0].style.transform = "translateX(90px)";
+            taskDiv.getElementsByClassName('task-label')[0].style.transform = "translateX(100px)";
             menu.style.display = 'block';
 
             let subject = createElement('div', {className: 'subject'}, task.subject);
@@ -147,9 +167,10 @@ class View {
         this.btnCreateTask.addEventListener('click', Handlers.clickOnActionButton);
         this.inputSearch = document.getElementById('search-bar');
         this.inputSearch.addEventListener('input', Handlers.inputSearch);
-        this.buttonsCancel = document.getElementsByClassName('cancel');
-        Object.values(this.buttonsCancel).forEach((elem) => {elem.addEventListener('click', Handlers.clickOnCancel)});
-
+        this.buttonCancel = document.getElementById('modal-cancel');
+        this.buttonSubmit = document.getElementById('modal-ok');
+        this.buttonCancel.addEventListener('click', Handlers.clickOnCancel);
+        this.buttonSubmit.addEventListener('click', Handlers.clickOnSubmit);
     }
 
     showModal(modal, task=null){
@@ -211,16 +232,15 @@ class View {
 
 }
 
-var tasks = {};
+var tasks;
 var app = {}
 var view = new View();
 var bufferTask = null;
 function startApp(data){
     app.data = data;
-    for (let i = 0; i < app.data.count; i++)
-        tasks[app.data.data[i].id] = new Task(app.data.data[i]);
+    tasks = new ListTasks(app.data.data);
 
-    view.render_all_tasks(Object.values(tasks));
+    view.render_all_tasks(Object.values(tasks.tasks));
     console.log(tasks);
 }
 
