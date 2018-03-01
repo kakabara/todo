@@ -72,7 +72,6 @@ def request_delete():
 @app.route('/edit', methods=['POST'])
 def request_edit():
     data = json.loads(json.loads(request.data.decode("utf-8")))
-    print(data)
     result = {'request_status': 'cancelled'}
     session = db.session()
     try:
