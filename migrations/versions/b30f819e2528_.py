@@ -1,8 +1,8 @@
-"""tasks table
+"""empty message
 
-Revision ID: 68615982f658
+Revision ID: b30f819e2528
 Revises: 
-Create Date: 2018-02-07 11:34:20.528228
+Create Date: 2018-03-01 10:50:58.401062
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '68615982f658'
+revision = 'b30f819e2528'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,10 +22,11 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('subject', sa.String(), nullable=True),
     sa.Column('description', sa.String(), nullable=True),
-    sa.Column('priority', sa.Enum('Critical', 'Usual', 'Important', name='prioritytype'), nullable=True),
-    sa.Column('status', sa.Enum('Done', 'InWork', name='tasktype'), nullable=True),
+    sa.Column('priority', sa.Enum('critical', 'usual', 'important', name='prioritytype'), nullable=True),
+    sa.Column('status', sa.Enum('done', 'inwork', name='tasktype'), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('end_at', sa.DateTime(), nullable=True),
+    sa.Column('deleted_at', sa.DateTime(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_task_subject'), 'task', ['subject'], unique=True)

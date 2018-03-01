@@ -5,14 +5,14 @@ import json
 
 
 class PriorityType(enum.Enum):
-    Critical = 'critical'
-    Usual = 'usual'
-    Important = 'important'
+    critical = 'critical'
+    usual = 'usual'
+    important = 'important'
 
 
 class TaskType(enum.Enum):
-    Done = 'done'
-    InWork = 'inwork'
+    done = 'done'
+    inwork = 'inwork'
 
 
 class Task(db.Model):
@@ -22,5 +22,6 @@ class Task(db.Model):
     priority = db.Column(db.Enum(PriorityType))
     status = db.Column(db.Enum(TaskType))
     created_at = db.Column(db.DateTime, default=datetime.now())
-    end_at = db.Column(db.DateTime)
+    end_at = db.Column(db.DateTime, default=None)
+    deleted_at = db.Column(db.DateTime, default=None)
 
