@@ -52,8 +52,8 @@ class Handlers {
                let body = JSON.stringify(bufferTask);
                ApiServer.createTask(body).then((data) => {
                     if (data['request_status'] == 'done') {
-                        let task = data['task'];
-                        Object.keys(task).forEach( (key) => {bufferTask[key] = task[key].replace('TaskType.', '').replace('PriorityType.', '');});
+                        bufferTask = new Task(data['task']);
+                        listTasks[bufferTask.id] = bufferTask;
                         view.render_task(bufferTask);
                     }
                });
@@ -101,9 +101,9 @@ class Handlers {
             view.showModal(modalEdit, task);
 
         } else if (action === 'create') {
+            bufferTask = null;
             let modalCreate = document.getElementById("task-modal");
             view.showModal(modalCreate);
-            bufferTask = null;
         } else if (action === 'delete') {
              ApiServer.deleteTask(JSON.stringify(bufferTask)).then((data) => {
                     if (data['request_status'] == 'done') {
@@ -205,8 +205,6 @@ class View {
             document.getElementById('description').value = task.description;
             document.getElementById('priority').value = task.priority.replace("PriorityType.", "");
             bufferTask = task;
-        } else {
-            bufferTask = {};
         }
         modal.style.display = 'block';
     }

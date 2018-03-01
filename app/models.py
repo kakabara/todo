@@ -17,7 +17,7 @@ class TaskType(enum.Enum):
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    subject = db.Column(db.String(), index=True, unique=True)
+    subject = db.Column(db.String(), index=True)
     description = db.Column(db.String())
     priority = db.Column(db.Enum(PriorityType))
     status = db.Column(db.Enum(TaskType))
