@@ -76,7 +76,7 @@ class Handlers {
     }
 
     static inputSearch(event){
-        let filteredTask = Object.values(tasks).filter( task =>
+        let filteredTask = Object.values(listTasks.tasks).filter( (task) =>
             { if (task.subject.toLowerCase().indexOf(event.target.value.toLowerCase()) > -1 ) {
                 return true;
             } else {
