@@ -10,3 +10,4 @@ logs/
 *.sh
 templates
 data
+node_modules
