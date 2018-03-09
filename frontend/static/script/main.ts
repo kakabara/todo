@@ -7,7 +7,7 @@ const sendRequest = (url, method, body) => {
 };
 
 class ApiServer{
-    static getTasks(path) { return sendRequest(path, 'GET', null); }
+    static getTasks() { return sendRequest('http://127.0.0.1:5000/tasks', 'GET', null); }
     static deleteTask(body)  { return sendRequest('http://127.0.0.1:5000/delete', 'POST', body);}
     static editTask(body)  { return sendRequest('http://127.0.0.1:5000/edit', 'POST', body);}
     static doneTask(body)  { return sendRequest('http://127.0.0.1:5000/done', 'POST', body);}
@@ -161,7 +161,6 @@ class Handlers {
             menu.style.display = '';
         }
         event.stopPropagation();
-
     }
 }
 
@@ -181,7 +180,6 @@ function createElement(tag, props, ...children) {
     })
     return newElement;
 }
-
 
 class View {
     todoList: HTMLElement;
@@ -203,7 +201,6 @@ class View {
 
     }
 
-
     showModal(modal, task=null){
         if (task){
             (<HTMLInputElement>document.getElementById('subject-input')).value = task.subject;
@@ -220,7 +217,6 @@ class View {
         (<HTMLInputElement>document.getElementById('description')).value = '';
         (<HTMLInputElement>document.getElementById('priority')).value = '';
     }
-
     // Блок кода отвечающий за создание и отображение данных
    createMenu(task: Task) {
         let iconsMenu = [];
@@ -248,7 +244,6 @@ class View {
        return createElement('div', {id: task.id, className: 'task'},menu, divTaskLabel);
    }
 
-
     render_task(task: Task) {
         let htmlTask = (<HTMLInputElement>document.getElementById(task['id'].toString()));
         if (htmlTask) {
@@ -274,15 +269,11 @@ class View {
 
     }
 
-
    render_all_tasks(tasks) {
        tasks.forEach((task) => {
             this.render_task(task);
        })
    }
-
-   // Разлчиные события
-
 }
 
 var listTasks;
@@ -297,5 +288,5 @@ function startApp(data){
     console.log(listTasks);
 }
 
-ApiServer.getTasks('http://127.0.0.1:5000/tasks').then( (data) => {console.log(data);startApp(data);} );
+ApiServer.getTasks().then( (data) => {console.log(data);startApp(data);} );
 
