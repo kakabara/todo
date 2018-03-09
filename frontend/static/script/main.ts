@@ -77,11 +77,12 @@ class Handlers {
 
     static inputSearch(event){
         let filteredTask = listTasks.tasks.values().filter( (task) =>
-            { if (task.subject.toLowerCase().indexOf(event.target.value.toLowerCase()) > -1 ) {
-                return true;
-            } else {
-                return false;
-            }
+            { 
+                if (task.subject.toLowerCase().indexOf(event.target.value.toLowerCase()) > -1 ) {
+                    return true;
+                } else {
+                    return false;
+                }
 
             });
         if (filteredTask) {
@@ -105,12 +106,12 @@ class Handlers {
             let modalCreate = document.getElementById("task-modal");
             view.showModal(modalCreate);
         } else if (action === 'delete') {
-             ApiServer.deleteTask(JSON.stringify(bufferTask)).then((data) => {
+            ApiServer.deleteTask(JSON.stringify(bufferTask)).then((data) => {
                     if (data['request_status'] == 'done') {
                         let taskHtml = document.getElementById(bufferTask.id);
                         taskHtml.parentNode.removeChild(taskHtml);
                     }
-                    });
+                });
 
         } else if (action === 'done') {
             bufferTask.status = 'done'
@@ -177,7 +178,7 @@ function createElement(tag, props, ...children) {
             child = document.createTextNode(child);
         }
         newElement.appendChild(child);
-    })
+    });
     return newElement;
 }
 
