@@ -2,16 +2,40 @@ const sendRequest = (url, method, body) => {
     return fetch(url, {method,
         body: body ? JSON.stringify(body) : null
      })
-    .then( (response) => response.json())
+    .then( (response) => {
+        if (response.ok) { return response.json();
+        } else {
+            throw new Error('Bad request');
+        }})
     .catch( (err) => {console.warn(err);} )
 };
 
+class Observable {
+    observers: any[];
+    constructor(){
+        this.observers = [];
+    }
+
+    sendMessage(data) {
+        this.observers.forEach((observer) => observer.notify(data));
+    }
+
+    addObserver = (observer) => {this.observers.push(observer)};
+}
+
+class Observer {
+    constrtuctor(){
+    }
+
+    notify = (data) => {};
+}
+
+
 class ApiServer{
-    static getTasks() { return sendRequest('http://127.0.0.1:5000/tasks', 'GET', null); }
-    static deleteTask(body)  { return sendRequest('http://127.0.0.1:5000/delete', 'POST', body);}
-    static editTask(body)  { return sendRequest('http://127.0.0.1:5000/edit', 'POST', body);}
-    static doneTask(body)  { return sendRequest('http://127.0.0.1:5000/done', 'POST', body);}
-    static createTask(body) { return sendRequest('http://127.0.0.1:5000/create', 'POST', body);}
+    static getTasks = () => { return sendRequest('http://127.0.0.1:5000/api/v1/tasks', 'GET', null); }
+    static deleteTask = (task_id) =>  { return sendRequest('http://127.0.0.1:5000/api/v1/tasks/' + task_id, 'DELETE', null);}
+    static editTask  = (body) => { return sendRequest('http://127.0.0.1:5000/api/v1/tasks/' + body['id'], 'PUT', body);}
+    static createTask = (body) => { return sendRequest('http://127.0.0.1:5000/api/v1/tasks/', 'POST', body);}
 }
 
 
@@ -32,6 +56,17 @@ class ListTasks{
     }
 }
 
+class App{
+    handlers: Handlers;
+    view: View;
+    todos: ListTasks;
+    constructor(){
+        this.view = new View();
+        this.handlers = new Handlers();
+
+    }
+}
+
 class Handlers {
     static clickOnCancel(event) {
         let modal = function(elem) {
@@ -49,9 +84,10 @@ class Handlers {
                bufferTask.subject = (<HTMLInputElement>document.getElementById('subject-input')).value;
                bufferTask.description = (<HTMLInputElement>document.getElementById('description')).value;
                bufferTask.priority = (<HTMLInputElement>document.getElementById('priority')).value;
-               let body = JSON.stringify(bufferTask);
-               ApiServer.createTask(body).then((data) => {
-                    if (data['request_status'] == 'done') {
+               let body = bufferTask;
+               ApiServer.createTask(body)
+               .then((data) => {
+                    if (data['result'] == 'done') {
                         bufferTask = new Task(data['task']);
                         listTasks[bufferTask.id] = bufferTask;
                         view.render_task(bufferTask);
@@ -62,9 +98,10 @@ class Handlers {
                bufferTask.subject = (<HTMLInputElement>document.getElementById('subject-input')).value;
                bufferTask.description = (<HTMLInputElement>document.getElementById('description')).value;
                bufferTask.priority = (<HTMLInputElement>document.getElementById('priority')).value;
-               let body = JSON.stringify(bufferTask);
-               ApiServer.editTask(body).then((data) => {
-                    if (data['request_status'] == 'done') {
+               let body = bufferTask;
+               ApiServer.editTask(body)
+               .then((data) => {
+                    if (data['result'] == 'done') {
                         let task = data['task'];
                         Object.keys(task).forEach( (key) => {bufferTask[key] = task[key].replace('TaskType.', '').replace('PriorityType.', '');});
                         view.render_task(bufferTask);
@@ -107,7 +144,7 @@ class Handlers {
             view.showModal(modalCreate);
         } else if (action === 'delete') {
             ApiServer.deleteTask(JSON.stringify(bufferTask)).then((data) => {
-                    if (data['request_status'] == 'done') {
+                    if (data['result'] == 'done') {
                         let taskHtml = document.getElementById(bufferTask.id);
                         taskHtml.parentNode.removeChild(taskHtml);
                     }
@@ -116,9 +153,7 @@ class Handlers {
         } else if (action === 'done') {
             bufferTask.status = 'done'
             ApiServer.editTask(JSON.stringify(bufferTask)).then((data) => {
-                    if (data['request_status'] == 'done') {
                         view.render_task(bufferTask);
-                    }
                 });
         }
 
@@ -166,21 +201,7 @@ class Handlers {
 }
 
 
-function createElement(tag, props, ...children) {
-    const newElement = document.createElement(tag);
 
-    Object.keys(props).forEach((key) => {
-            newElement[key] = props[key];
-    })
-
-    children.forEach((child) =>{
-        if (typeof child == 'string'){
-            child = document.createTextNode(child);
-        }
-        newElement.appendChild(child);
-    });
-    return newElement;
-}
 
 class View {
     todoList: HTMLElement;
@@ -188,6 +209,7 @@ class View {
     inputSearch: HTMLElement;
     buttonCancel: HTMLElement;
     buttonSubmit: HTMLElement;
+    handlers
     constructor(){
         this.todoList = document.getElementById('queue-tasks');
         this.todoList.addEventListener('click', Handlers.clickOnQueueTasks);
@@ -200,6 +222,21 @@ class View {
         this.buttonCancel.addEventListener('click', Handlers.clickOnCancel);
         this.buttonSubmit.addEventListener('click', Handlers.clickOnSubmit);
 
+    }
+    private createElement(tag, props, ...children) {
+        const newElement = document.createElement(tag);
+    
+        Object.keys(props).forEach((key) => {
+                newElement[key] = props[key];
+        })
+    
+        children.forEach((child) =>{
+            if (typeof child == 'string'){
+                child = document.createTextNode(child);
+            }
+            newElement.appendChild(child);
+        });
+        return newElement;
     }
 
     showModal(modal, task=null){
@@ -223,26 +260,26 @@ class View {
         let iconsMenu = [];
         const butMenu= {'delete':'close_red', 'edit': 'edit_orange', 'done':'done_green'};
         Object.keys(butMenu).forEach( (key)=> {
-            let img = createElement('img', {className: 'menu-icon', src: "static/images/" + butMenu[key] + ".png"});
+            let img = this.createElement('img', {className: 'menu-icon', src: "static/images/" + butMenu[key] + ".png"});
             img.dataset.action = key;
             img.dataset.task_id = task.id;
             iconsMenu.push(img);
             });
 
-        let menu = createElement('div', {className: 'slide-menu'}, ...iconsMenu);
+        let menu = this.createElement('div', {className: 'slide-menu'}, ...iconsMenu);
         return menu;
     }
 
    getTaskLabel(task: Task){
        let status: string = task['status'];
        let priority: string = task['priority'];
-       return createElement('div', {className: ['inline','task-label', priority, status].join(' ')}, task['subject']);
+       return this.createElement('div', {className: ['inline','task-label', priority, status].join(' ')}, task['subject']);
    }
 
    getTaskHTML(task: Task) {
        let menu = this.createMenu(task);
        let divTaskLabel = this.getTaskLabel(task);
-       return createElement('div', {id: task.id, className: 'task'},menu, divTaskLabel);
+       return this.createElement('div', {id: task.id, className: 'task'},menu, divTaskLabel);
    }
 
     render_task(task: Task) {
@@ -289,5 +326,7 @@ function startApp(data){
     console.log(listTasks);
 }
 
-ApiServer.getTasks().then( (data) => {console.log(data);startApp(data);} );
+ApiServer.getTasks().then( (data) => {
+    console.log(data);startApp(data);
+} );
 
