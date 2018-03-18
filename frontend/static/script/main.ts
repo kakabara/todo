@@ -180,16 +180,7 @@ class Handlers {
 
         if (!menu.style.display) {
 
-            let task = listTasks.tasks[taskDiv.id];
-            taskDiv.getElementsByClassName('task-label')[0].style.transform = "translateX(100px)";
-            menu.style.display = 'block';
-
-            let subject = createElement('div', {className: 'subject'}, task.subject);
-            let time = createElement('div', {className: 'time'}, task.created_at);
-            let description = createElement('div', {className: 'description'}, task.description);
-            let taskInfo = createElement('div', {className: 'task-info'}, subject, time, description);
-
-            taskDiv.appendChild(taskInfo);
+            
 
         } else {
             taskDiv.getElementsByClassName('task-label')[0].style.transform = "translateX(0)";
@@ -298,10 +289,21 @@ class View {
             let descriptionHtml = htmlTask.getElementsByClassName('description')[0];
             descriptionHtml['innerText'] = task['description'];
             taskLabel['innerText'] = task['subject'];
+
             // here toggle class name
         } else {
            let tmp_task = {...task};
            let taskElem = this.getTaskHTML(tmp_task);
+           let task = listTasks.tasks[taskDiv.id];
+            taskDiv.getElementsByClassName('task-label')[0].style.transform = "translateX(100px)";
+            menu.style.display = 'block';
+
+            let subject = this.createElement('div', {className: 'subject'}, task.subject);
+            let time = createElement('div', {className: 'time'}, task.created_at);
+            let description = createElement('div', {className: 'description'}, task.description);
+            let taskInfo = createElement('div', {className: 'task-info'}, subject, time, description);
+
+            taskDiv.appendChild(taskInfo);
            this.todoList.appendChild(taskElem);
         }
 
